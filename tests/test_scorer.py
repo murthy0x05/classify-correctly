@@ -13,10 +13,8 @@ sys.path.insert(0, str(ROOT))
 
 FEATURE_COLUMNS = ["Time"] + [f"V{i}" for i in range(1, 29)] + ["Amount"]
 
-
 def make_dummy_transaction(amount: float = 100.0) -> dict:
     return {f: 0.0 for f in FEATURE_COLUMNS} | {"Amount": amount}
-
 
 
 class TestFeatureRow:
@@ -34,7 +32,7 @@ class TestFeatureRow:
         assert float(row["Amount"].iloc[0]) == 250.0
 
     def test_missing_features_default_to_zero(self):
-        txn = {"Amount": 100.0}  # all V-features missing
+        txn = {"Amount": 100.0}  
         row = self.scorer._build_feature_row(txn)
         assert float(row["V1"].iloc[0]) == 0.0
         assert float(row["Amount"].iloc[0]) == 100.0
@@ -43,7 +41,6 @@ class TestFeatureRow:
         txn = make_dummy_transaction()
         row = self.scorer._build_feature_row(txn)
         assert list(row.columns) == FEATURE_COLUMNS
-
 
 class TestScoringResult:
     """Test ScoringResult dataclass"""
@@ -78,9 +75,8 @@ class TestScoringResult:
             model_version="xgb-v1.0",
             input_hash="def456",
         )
-        # Should not raise
+        
         json.dumps(result.to_dict())
-
 
 class TestAuditTrail:
     """Test that audit log is written correctly."""
@@ -91,17 +87,14 @@ class TestAuditTrail:
         scorer = FraudScorer()
         scorer._threshold = 0.5
 
-        # Mock model predict_proba
         mock_model = MagicMock()
         mock_model.predict_proba.return_value = np.array([[0.9, 0.1]])
         scorer._model = mock_model
 
-        # Mock SHAP explainer
         mock_explainer = MagicMock()
         mock_explainer.shap_values.return_value = np.zeros(len(FEATURE_COLUMNS))
         scorer._explainer = mock_explainer
 
-        # Redirect audit log to tmp
         import src.scorer as scorer_module
         original_audit = scorer_module.AUDIT_LOG
         scorer_module.AUDIT_LOG = tmp_path / "test_audit.jsonl"
@@ -120,7 +113,6 @@ class TestAuditTrail:
             assert "input_hash" in entry
         finally:
             scorer_module.AUDIT_LOG = original_audit
-
 
 class TestExplainModule:
     """Test explain.py aliases and structure."""
@@ -145,7 +137,6 @@ class TestExplainModule:
         assert len(reasons) == 2
         assert "SHAP" in reasons[0]
 
-
 class TestCostOptimalThreshold:
     """Test threshold selection logic."""
 
@@ -153,7 +144,6 @@ class TestCostOptimalThreshold:
         from src.train import cost_optimal_threshold
         import numpy as np
 
-        # Perfect classifier: all fraud at prob 1.0, all legit at 0.0
         probs = np.array([0.0] * 100 + [1.0] * 10)
         y_true = np.array([0] * 100 + [1] * 10)
         avg_fraud_amount = 500.0
@@ -161,7 +151,6 @@ class TestCostOptimalThreshold:
         result = cost_optimal_threshold(probs, y_true, avg_fraud_amount)
         cost_opt = result["cost_optimal"]
 
-        # At perfect separation, FP and FN should both be 0
         assert cost_opt["fp"] == 0
         assert cost_opt["fn"] == 0
         assert cost_opt["total_cost_inr"] == 0.0
@@ -170,15 +159,14 @@ class TestCostOptimalThreshold:
         from src.train import cost_optimal_threshold
         import numpy as np
 
-        # Spread probs so threshold sweep can find recall >= 0.85
         np.random.seed(42)
         probs = np.concatenate([
-            np.random.uniform(0.0, 0.4, 900),  # legit
-            np.random.uniform(0.4, 1.0, 100),  # fraud
+            np.random.uniform(0.0, 0.4, 900),  
+            np.random.uniform(0.4, 1.0, 100),  
         ])
         y_true = np.array([0] * 900 + [1] * 100)
 
         result = cost_optimal_threshold(probs, y_true, 500.0)
         ref = result["recall_085_ref"]
         assert ref is not None
-        assert ref["recall"] >= 0.84  # allow tiny float tolerance
+        assert ref["recall"] >= 0.84  

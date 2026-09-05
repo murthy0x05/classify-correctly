@@ -57,12 +57,10 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 </style>
 """, unsafe_allow_html=True)
 
-
 @st.cache_resource(show_spinner="Loading fraud detection model …")
 def get_scorer():
     from src.scorer import load_scorer
     return load_scorer()
-
 
 @st.cache_data
 def load_test_batch(n: int = 200):
@@ -75,14 +73,12 @@ def load_test_batch(n: int = 200):
     legit = df[df["Class"] == 0].head(n - len(fraud))
     return pd.concat([fraud, legit]).sample(frac=1, random_state=42).reset_index(drop=True)
 
-
 @st.cache_data
 def load_metrics() -> dict | None:
     p = REPORTS / "metrics.json"
     if p.exists():
         return json.loads(p.read_text())
     return None
-
 
 def badge(decision: str) -> str:
     if decision == "FLAGGED":
@@ -91,7 +87,6 @@ def badge(decision: str) -> str:
         return '<span class="risk-badge-cleared">🟢 CLEARED</span>'
     else:
         return '<span class="risk-badge-error">⚠️ ERROR</span>'
-
 
 def confidence_bar(conf: float, decision: str) -> str:
     display_conf = conf if decision == "FLAGGED" else (1.0 - conf)
@@ -104,7 +99,6 @@ def confidence_bar(conf: float, decision: str) -> str:
     </div>
     <small style="color:#aaa">{pct}% confidence</small>
     """
-
 
 with st.sidebar:
     st.image("https://img.icons8.com/fluency/96/shield.png", width=64)
@@ -150,7 +144,6 @@ tab1, tab2, tab3, tab4 = st.tabs(
     ["📊 Score Transactions", "⚠️ Failure Cases", "📈 Metrics Dashboard", "📋 Audit Trail"]
 )
 
-# Tab 1 — Score Transactions
 with tab1:
     st.header("Score Transactions")
 
@@ -190,7 +183,6 @@ with tab1:
 
         st.markdown("---")
 
-        # Running metrics
         if has_labels:
             y_true = df_to_score["Class"].values
             tp = sum(1 for r, l in zip(results, y_true)
@@ -220,7 +212,6 @@ with tab1:
         col_a.metric("🔴 Flagged", len(flagged))
         col_b.metric("🟢 Cleared", len(cleared))
 
-        # Results table
         st.markdown("### Transaction Results")
         rows_html = []
         for i, (r, (_, row)) in enumerate(zip(results, df_to_score.iterrows())):
@@ -263,7 +254,6 @@ with tab1:
         st.success("✅ All results logged to `logs/audit_trail.jsonl`")
 
 
-# Tab 2 — Failure Cases
 with tab2:
     st.header("⚠️ Failure Cases — Handled Gracefully")
     st.markdown(
@@ -284,7 +274,6 @@ with tab2:
             r = scorer.score_transaction(txn).to_dict()
             results.append((r, row))
 
-        # Find first FP and FN
         fp_case = next(
             ((r, row) for r, row in results
              if r["decision"] == "FLAGGED" and int(row["Class"]) == 0),
@@ -354,7 +343,6 @@ Logged to audit trail. Flagged for post-hoc chargeback analysis. Used for future
         )
 
 
-# Tab 3 — Metrics Dashboard
 with tab3:
     st.header("📈 Held-Out Test Set Metrics")
     st.markdown(
@@ -369,7 +357,6 @@ with tab3:
         xgb_m = metrics.get("xgboost", {})
         lr_m = metrics.get("logistic_regression", {})
 
-        # Summary table
         st.markdown("### Model Comparison")
         comp_df = pd.DataFrame([
             {
@@ -393,7 +380,6 @@ with tab3:
         ])
         st.dataframe(comp_df, use_container_width=True)
 
-        # FP cost detail
         fp_info = xgb_m.get("false_positive_cost", {})
         fn_info = xgb_m.get("false_negative_cost", {})
 
@@ -406,7 +392,6 @@ with tab3:
         st.caption(fp_info.get("justification", ""))
         st.metric("Total Expected Cost", f"₹{xgb_m.get('total_expected_cost_inr', 0):,.0f}")
 
-        # Plots
         st.markdown("### Confusion Matrix & Curves")
         figures_dir = REPORTS / "figures"
         img_files = {
@@ -423,7 +408,6 @@ with tab3:
                 col.warning(f"{title} not found.")
 
 
-# Tab 4 — Audit Trail
 with tab4:
     st.header("📋 Audit Trail")
     st.markdown(
@@ -439,10 +423,9 @@ with tab4:
 
         st.metric("Total Entries", len(entries))
 
-        # Last 100 entries reversed (newest first)
         df_audit = pd.DataFrame(reversed(entries[-100:]))
         if not df_audit.empty:
-            # Colour decision column
+            
             def colour_decision(val):
                 if val == "FLAGGED":
                     return "color: #ff4b4b; font-weight: bold"

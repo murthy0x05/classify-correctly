@@ -13,7 +13,6 @@ ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw" / "creditcard.csv"
 PROCESSED = ROOT / "data" / "processed"
 
-
 def download_dataset() -> None:
     """Download via kaggle CLI if the raw file is missing."""
     if RAW.exists():
@@ -40,7 +39,6 @@ def download_dataset() -> None:
         )
     print("Download complete.")
 
-
 def load_and_validate() -> pd.DataFrame:
     """Load CSV and run basic sanity checks."""
     print(f"Loading {RAW} …")
@@ -66,7 +64,6 @@ def load_and_validate() -> pd.DataFrame:
 
     return df
 
-
 def split_and_save(df: pd.DataFrame) -> None:
     """
     Stratified 60/20/20 split.
@@ -78,7 +75,6 @@ def split_and_save(df: pd.DataFrame) -> None:
     X = df.drop(columns=["Class"])
     y = df["Class"]
 
-    # First cut: 80% trainval | 20% test
     X_trainval, X_test, y_trainval, y_test = train_test_split(
         X, y,
         test_size=0.20,
@@ -86,7 +82,6 @@ def split_and_save(df: pd.DataFrame) -> None:
         random_state=42,
     )
 
-    # Second cut: 75% of trainval = train (60% overall), 25% = val (20% overall)
     X_train, X_val, y_train, y_val = train_test_split(
         X_trainval, y_trainval,
         test_size=0.25,
@@ -109,12 +104,10 @@ def split_and_save(df: pd.DataFrame) -> None:
 
     print("Splits saved. TEST SET IS NOW LOCKED — do not touch until final eval.")
 
-
 def main() -> None:
     download_dataset()
     df = load_and_validate()
     split_and_save(df)
-
 
 if __name__ == "__main__":
     main()

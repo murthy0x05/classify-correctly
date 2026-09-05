@@ -30,13 +30,11 @@ FIGURES = REPORTS / "figures"
 FP_COST_INR = 150.0
 TRANSACTIONS_PER_1K = 1000
 
-
 def load_test() -> tuple[pd.DataFrame, pd.Series]:
     df = pd.read_csv(PROCESSED / "test.csv")
     X = df.drop(columns=["Class"])
     y = df["Class"]
     return X, y
-
 
 def evaluate_model(
     name: str,
@@ -114,7 +112,6 @@ def evaluate_model(
 
     return metrics
 
-
 def plot_confusion_matrix(name: str, y_true: np.ndarray, preds: np.ndarray) -> None:
     FIGURES.mkdir(parents=True, exist_ok=True)
     cm = confusion_matrix(y_true, preds)
@@ -128,7 +125,6 @@ def plot_confusion_matrix(name: str, y_true: np.ndarray, preds: np.ndarray) -> N
     plt.close()
     print(f"Saved: {FIGURES / fname}")
 
-
 def plot_pr_curve(name: str, y_true: np.ndarray, probs: np.ndarray, threshold: float) -> None:
     FIGURES.mkdir(parents=True, exist_ok=True)
     precision_vals, recall_vals, thresholds = precision_recall_curve(y_true, probs)
@@ -138,7 +134,6 @@ def plot_pr_curve(name: str, y_true: np.ndarray, probs: np.ndarray, threshold: f
     ax.plot(recall_vals, precision_vals, lw=2, label=f"PR curve (AUC = {pr_auc:.4f})")
     ax.axhline(y=sum(y_true) / len(y_true), color="gray", linestyle="--", label="Random baseline")
 
-    # Mark the chosen threshold point
     idx = np.argmin(np.abs(thresholds - threshold))
     ax.scatter(recall_vals[idx], precision_vals[idx], s=120, zorder=5,
                color="red", label=f"Chosen threshold ({threshold:.3f})")
@@ -153,7 +148,6 @@ def plot_pr_curve(name: str, y_true: np.ndarray, probs: np.ndarray, threshold: f
     plt.savefig(FIGURES / fname, dpi=150)
     plt.close()
     print(f"Saved: {FIGURES / fname}")
-
 
 def plot_roc_curve(name: str, y_true: np.ndarray, probs: np.ndarray) -> None:
     FIGURES.mkdir(parents=True, exist_ok=True)
@@ -174,13 +168,11 @@ def plot_roc_curve(name: str, y_true: np.ndarray, probs: np.ndarray) -> None:
     plt.close()
     print(f"Saved: {FIGURES / fname}")
 
-
 def main() -> None:
     print("Loading held-out test set …")
     X_test, y_test = load_test()
     y_arr = y_test.values
 
-    # Load XGB meta (contains chosen threshold + avg fraud amount)
     with open(MODELS / "xgb_meta.json") as f:
         xgb_meta = json.load(f)
 
@@ -203,8 +195,7 @@ def main() -> None:
     X_test_scaled[["Amount", "Time"]] = lr_scaler.transform(X_test[["Amount", "Time"]])
     lr_probs = lr_model.predict_proba(X_test_scaled)[:, 1]
 
-    # LR threshold: cost-optimal on val probs (recomputed here as reference)
-    # We use 0.5 default if no dedicated lr threshold was stored; load from meta if present
+    
     lr_meta_path = MODELS / "lr_meta.json"
     if lr_meta_path.exists():
         with open(lr_meta_path) as f:
@@ -235,7 +226,6 @@ def main() -> None:
     print(f"\nmetrics.json written to {REPORTS / 'metrics.json'}")
     print("All figures saved to reports/figures/")
     print("DONE — these are the final, honest test-set numbers.")
-
 
 if __name__ == "__main__":
     main()

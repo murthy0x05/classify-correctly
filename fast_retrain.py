@@ -13,11 +13,9 @@ MODELS = ROOT / "models"
 MODELS.mkdir(exist_ok=True)
 FP_COST_INR = 150.0
 
-
 def load_split(name):
     df = pd.read_csv(PROCESSED / f"{name}.csv")
     return df.drop(columns=["Class"]), df["Class"]
-
 
 def cost_optimal_threshold(probs, y_true, avg_fraud_amount, fp_cost=FP_COST_INR):
     best_cost = float("inf")
@@ -37,7 +35,6 @@ def cost_optimal_threshold(probs, y_true, avg_fraud_amount, fp_cost=FP_COST_INR)
         if rec >= 0.85 and (not r085_row or prec > r085_row.get("precision", 0)):
             r085_row = row
     return {"cost_optimal": best_row, "recall_085_ref": r085_row or None}
-
 
 print("Loading splits ...")
 X_train, y_train = load_split("train")

@@ -18,30 +18,26 @@ MODELS = ROOT / "models"
 LOGS = ROOT / "logs"
 AUDIT_LOG = LOGS / "audit_trail.jsonl"
 
-# Model version tag — bump this if you retrain
 MODEL_VERSION = "xgb-v1.0"
 
-# Feature columns expected by the model (same order as training data)
 FEATURE_COLUMNS = ["Time"] + [f"V{i}" for i in range(1, 29)] + ["Amount"]
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
 
-
 @dataclass
 class ScoringResult:
-    decision: str          # "FLAGGED" | "CLEARED"
-    confidence: float      # model probability [0.0, 1.0]
-    threshold: float       # threshold used for this decision
-    top_reasons: list[str] # plain-English SHAP explanations (top 3)
-    timestamp: str         # ISO-8601 UTC
+    decision: str          
+    confidence: float      
+    threshold: float       
+    top_reasons: list[str] 
+    timestamp: str         
     model_version: str
-    input_hash: str        # sha256 of input for audit linkage
-    error: str | None = None  # populated if scoring failed
+    input_hash: str        
+    error: str | None = None  
 
     def to_dict(self) -> dict:
         return asdict(self)
-
 
 class FraudScorer:
     """
@@ -60,11 +56,11 @@ class FraudScorer:
     def load(self) -> "FraudScorer":
         """Load model, metadata, and build SHAP explainer."""
         import shap
-        # Support both `python src/scorer.py` and `from src.scorer import ...`
+        
         try:
             from src.explain import build_explainer
         except ImportError:
-            from explain import build_explainer  # type: ignore[no-redef]
+            from explain import build_explainer  
 
         meta_path = MODELS / "xgb_meta.json"
         model_path = MODELS / "xgb_fraud.pkl"
@@ -101,7 +97,7 @@ class FraudScorer:
         try:
             from src.explain import explain_prediction, top_reasons_text
         except ImportError:
-            from explain import explain_prediction, top_reasons_text  # type: ignore[no-redef]
+            from explain import explain_prediction, top_reasons_text  
 
         timestamp = datetime.now(timezone.utc).isoformat()
         input_hash = hashlib.sha256(
@@ -151,7 +147,6 @@ class FraudScorer:
         """Score a list of transactions."""
         return [self.score_transaction(t) for t in transactions]
 
-    
     def _build_feature_row(self, transaction: dict) -> pd.DataFrame:
         """Convert a transaction dict to a properly-ordered DataFrame row."""
         missing = [f for f in FEATURE_COLUMNS if f not in transaction]
@@ -174,7 +169,7 @@ class FraudScorer:
                 "top_reasons": result.top_reasons,
                 "model_version": result.model_version,
                 "error": result.error,
-                # Truncated transaction for privacy — only log Amount
+                
                 "amount": transaction.get("Amount"),
             }
             with open(AUDIT_LOG, "a", encoding="utf-8") as f:
@@ -183,9 +178,7 @@ class FraudScorer:
             logger.error(f"Audit write failed: {e}")
 
 
-
 _scorer: FraudScorer | None = None
-
 
 def load_scorer() -> FraudScorer:
     """Return a cached, loaded FraudScorer (singleton)."""
@@ -193,7 +186,6 @@ def load_scorer() -> FraudScorer:
     if _scorer is None:
         _scorer = FraudScorer().load()
     return _scorer
-
 
 def score_transaction(transaction: dict) -> dict:
     """
@@ -206,9 +198,8 @@ def score_transaction(transaction: dict) -> dict:
     result = scorer.score_transaction(transaction)
     return result.to_dict()
 
-
 if __name__ == "__main__":
-    # Quick smoke test
+    
     print("Loading scorer …")
     s = load_scorer()
     dummy = {f: 0.0 for f in FEATURE_COLUMNS}

@@ -24,8 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PROCESSED = ROOT / "data" / "processed"
 MODELS = ROOT / "models"
 
-FP_COST_INR = 150.0  # ₹150 per manual review / false positive
-
+FP_COST_INR = 150.0  
 
 
 def load_split(name: str) -> tuple[pd.DataFrame, pd.Series]:
@@ -34,14 +33,12 @@ def load_split(name: str) -> tuple[pd.DataFrame, pd.Series]:
     y = df["Class"]
     return X, y
 
-
 def compute_avg_fraud_amount(y_train: pd.Series, X_train: pd.DataFrame) -> float:
     """Compute average fraud transaction amount from training data."""
     fraud_mask = y_train == 1
     avg = float(X_train.loc[fraud_mask, "Amount"].mean())
     print(f"Average fraud Amount (train set): ₹{avg:.2f}")
     return avg
-
 
 def cost_optimal_threshold(
     probs: np.ndarray,
@@ -91,7 +88,6 @@ def cost_optimal_threshold(
             best_threshold = float(t)
             best_cost_row = row
 
-        # Recall ≥ 0.85 reference: highest precision among qualifying thresholds
         if recall >= 0.85:
             if recall_085_threshold is None or precision > recall_085_row.get("precision", 0):
                 recall_085_threshold = float(t)
@@ -103,7 +99,6 @@ def cost_optimal_threshold(
     }
 
 
-
 def train_logistic_regression(
     X_train: pd.DataFrame,
     y_train: pd.Series,
@@ -113,7 +108,6 @@ def train_logistic_regression(
 ) -> dict:
     print("\n=== Logistic Regression Baseline ===")
 
-    # Scale Amount and Time; V1–V28 are already PCA-normalised
     scaler = StandardScaler()
     cols_to_scale = ["Amount", "Time"]
     X_train_s = X_train.copy()
@@ -145,7 +139,6 @@ def train_logistic_regression(
     joblib.dump(lr, MODELS / "lr_baseline.pkl")
     joblib.dump(scaler, MODELS / "lr_scaler.pkl")
 
-    # Save LR metadata (threshold + val metrics) for evaluate.py
     lr_meta = {
         "chosen_threshold": chosen_t,
         "threshold_info": threshold_info,
@@ -165,7 +158,6 @@ def train_logistic_regression(
         "threshold_info": threshold_info,
         "chosen_threshold": chosen_t,
     }
-
 
 
 def _xgb_objective(
@@ -201,7 +193,6 @@ def _xgb_objective(
     )
     val_probs = model.predict_proba(X_val)[:, 1]
     return average_precision_score(y_val, val_probs)
-
 
 def train_xgboost(
     X_train: pd.DataFrame,
@@ -256,7 +247,6 @@ def train_xgboost(
     MODELS.mkdir(parents=True, exist_ok=True)
     joblib.dump(xgb_model, MODELS / "xgb_fraud.pkl")
 
-    # Save threshold + metadata
     meta = {
         "chosen_threshold": chosen_t,
         "threshold_info": threshold_info,
@@ -279,7 +269,6 @@ def train_xgboost(
     }
 
 
-
 def main() -> None:
     print("Loading splits …")
     X_train, y_train = load_split("train")
@@ -294,7 +283,6 @@ def main() -> None:
 
     print("\nTraining complete. Models saved to models/")
     print("Next: run src/evaluate.py to get test-set metrics.")
-
 
 if __name__ == "__main__":
     main()

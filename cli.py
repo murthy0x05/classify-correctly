@@ -12,13 +12,11 @@ sys.path.insert(0, str(ROOT))
 
 from src.scorer import FEATURE_COLUMNS, load_scorer
 
-
 ANSI_RED = "\033[91m"
 ANSI_GREEN = "\033[92m"
 ANSI_YELLOW = "\033[93m"
 ANSI_RESET = "\033[0m"
 ANSI_BOLD = "\033[1m"
-
 
 def fmt_decision(decision: str) -> str:
     if decision == "FLAGGED":
@@ -26,7 +24,6 @@ def fmt_decision(decision: str) -> str:
     elif decision == "CLEARED":
         return f"{ANSI_GREEN}🟢 CLEARED{ANSI_RESET}"
     return f"{ANSI_YELLOW}⚠️  {decision}{ANSI_RESET}"
-
 
 def run_batch(df: pd.DataFrame, scorer, has_labels: bool) -> None:
     tp = fp = fn = tn = 0
@@ -75,7 +72,6 @@ def run_batch(df: pd.DataFrame, scorer, has_labels: bool) -> None:
         print(f"  Recall       : {rec:.4f}")
         print(f"  F1           : {f1:.4f}")
 
-        # Show one explicit failure case
         fp_idx = next(
             (i for i, r in enumerate(results)
              if r["decision"] == "FLAGGED" and int(df.iloc[i]["Class"]) == 0),
@@ -102,7 +98,6 @@ def run_batch(df: pd.DataFrame, scorer, has_labels: bool) -> None:
             print(f"   Action: Logged to audit trail. Represents model blind spot.")
 
     print(f"\n✅ Audit trail appended to logs/audit_trail.jsonl")
-
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -131,7 +126,6 @@ def main() -> None:
     df = pd.read_csv(input_path)
     has_labels = "Class" in df.columns
 
-    # Ensure all feature columns present
     missing_cols = [c for c in FEATURE_COLUMNS if c not in df.columns]
     if missing_cols:
         print(f"WARNING: Missing columns: {missing_cols} — will default to 0.0")
@@ -139,7 +133,6 @@ def main() -> None:
     df = df.head(args.limit)
     print(f"Scoring {len(df)} transactions (has_labels={has_labels}) …\n")
     run_batch(df, scorer, has_labels)
-
 
 if __name__ == "__main__":
     main()

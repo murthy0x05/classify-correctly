@@ -6,23 +6,19 @@ import numpy as np
 import pandas as pd
 import shap
 
-# V1–V28 cannot be named precisely (PCA-anonymised), so we give them
-# descriptive but honest labels for the UI.
+
 _FEATURE_ALIASES: dict[str, str] = {
     "Time": "Time since first transaction (seconds)",
     "Amount": "Transaction amount (₹)",
     **{f"V{i}": f"Behavioural pattern {i}" for i in range(1, 29)},
 }
 
-
 def _alias(feature: str) -> str:
     return _FEATURE_ALIASES.get(feature, feature)
-
 
 def build_explainer(model: Any) -> shap.TreeExplainer:
     """Build a cached SHAP TreeExplainer for an XGBoost model."""
     return shap.TreeExplainer(model)
-
 
 def explain_prediction(
     row: pd.Series | dict,
@@ -47,9 +43,8 @@ def explain_prediction(
     if isinstance(row, dict):
         row = pd.Series(row)
 
-    # SHAP expects a 2-D array
     X = row[feature_names].values.reshape(1, -1)
-    shap_values = explainer.shap_values(X)[0]  # shape: (n_features,)
+    shap_values = explainer.shap_values(X)[0]  
 
     contributions = []
     for i, fname in enumerate(feature_names):
@@ -64,11 +59,9 @@ def explain_prediction(
             }
         )
 
-    # Sort by absolute SHAP value, descending
     contributions.sort(key=lambda d: d["magnitude"], reverse=True)
     top = contributions[:top_n]
 
-    # Add plain-English summary
     for c in top:
         direction = c["direction"]
         c["plain_english"] = (
@@ -77,7 +70,6 @@ def explain_prediction(
         )
 
     return top
-
 
 def top_reasons_text(contributions: list[dict]) -> list[str]:
     """Return a list of plain-English reason strings (for the audit log / UI)."""
