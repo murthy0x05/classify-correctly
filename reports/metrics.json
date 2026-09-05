@@ -1,0 +1,64 @@
+{
+  "dataset": "Kaggle Credit Card Fraud Detection (mlg-ulb/creditcardfraud)",
+  "test_set_size": 56962,
+  "test_fraud_count": 98,
+  "test_fraud_rate_pct": 0.172,
+  "xgboost": {
+    "model": "XGBoost",
+    "threshold": 0.8525,
+    "precision": 0.9205,
+    "recall": 0.8265,
+    "f1": 0.871,
+    "roc_auc": 0.9747,
+    "pr_auc": 0.8678,
+    "confusion_matrix": {
+      "tp": 81,
+      "fp": 7,
+      "fn": 17,
+      "tn": 56857
+    },
+    "false_positive_cost": {
+      "fp_count": 7,
+      "fp_per_1000_transactions": 0.12,
+      "cost_per_fp_inr": 150.0,
+      "total_fp_cost_inr": 1050.0,
+      "justification": "Estimated at ~10 minutes of a support agent's time at a blended hourly cost of \u20b9900 (\u20b915/min \u00d7 10 min = \u20b9150 per false positive). This covers agent time + customer friction (drop in payment success rate)."
+    },
+    "false_negative_cost": {
+      "fn_count": 17,
+      "fn_per_1000_transactions": 0.3,
+      "avg_fraud_amount_inr": 130.15,
+      "total_fn_cost_inr": 2212.47
+    },
+    "total_expected_cost_inr": 3262.47
+  },
+  "logistic_regression": {
+    "model": "Logistic Regression",
+    "threshold": 0.99,
+    "precision": 0.5563,
+    "recall": 0.8571,
+    "f1": 0.6747,
+    "roc_auc": 0.9726,
+    "pr_auc": 0.7209,
+    "confusion_matrix": {
+      "tp": 84,
+      "fp": 67,
+      "fn": 14,
+      "tn": 56797
+    },
+    "false_positive_cost": {
+      "fp_count": 67,
+      "fp_per_1000_transactions": 1.18,
+      "cost_per_fp_inr": 150.0,
+      "total_fp_cost_inr": 10050.0,
+      "justification": "Estimated at ~10 minutes of a support agent's time at a blended hourly cost of \u20b9900 (\u20b915/min \u00d7 10 min = \u20b9150 per false positive). This covers agent time + customer friction (drop in payment success rate)."
+    },
+    "false_negative_cost": {
+      "fn_count": 14,
+      "fn_per_1000_transactions": 0.25,
+      "avg_fraud_amount_inr": 130.15,
+      "total_fn_cost_inr": 1822.04
+    },
+    "total_expected_cost_inr": 11872.04
+  }
+}
