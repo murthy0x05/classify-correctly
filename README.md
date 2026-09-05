@@ -1,4 +1,4 @@
-# RazorGuard — Card-Not-Present Fraud Risk Detector
+# Classify Correctly — Card-Not-Present Fraud Risk Detector
 
 > **Razorpay AI Buildathon · AI Risk Manager track**  
 > Strictly defensive: scores risk, never generates or facilitates fraud.
