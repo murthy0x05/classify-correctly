@@ -1,13 +1,3 @@
-"""
-app.py — Streamlit demo for the Fraud Risk Detector.
-
-Tabs:
-  1. Score Transactions  — Upload CSV or use built-in test batch
-  2. Failure Cases       — Explicit FP / FN with audit trail proof
-  3. Metrics Dashboard   — PR curve, ROC curve, confusion matrix
-  4. Audit Trail         — Live view of logs/audit_trail.jsonl
-"""
-
 from __future__ import annotations
 
 import json
@@ -20,7 +10,6 @@ import streamlit as st
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
-# ── Page config ────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Classify Correctly — Fraud Risk Detector",
     page_icon="🛡️",
@@ -28,14 +17,12 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Constants ──────────────────────────────────────────────────────────────
 FEATURE_COLUMNS = ["Time"] + [f"V{i}" for i in range(1, 29)] + ["Amount"]
 MODELS = ROOT / "models"
 REPORTS = ROOT / "reports"
 LOGS = ROOT / "logs"
 PROCESSED = ROOT / "data" / "processed"
 
-# ── CSS theming ────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -71,7 +58,6 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 """, unsafe_allow_html=True)
 
 
-# ── Cached resource loading ────────────────────────────────────────────────
 @st.cache_resource(show_spinner="Loading fraud detection model …")
 def get_scorer():
     from src.scorer import load_scorer
@@ -122,7 +108,7 @@ def confidence_bar(conf: float, decision: str) -> str:
 
 with st.sidebar:
     st.image("https://img.icons8.com/fluency/96/shield.png", width=64)
-    st.title("🛡️ Classify Correctly")
+    st.title("Classify Correctly")
     st.caption("Credit Card Fraud Risk Detection")
     st.markdown("---")
 
@@ -149,7 +135,6 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
-# ── Not ready guard ────────────────────────────────────────────────────────
 if not model_ready:
     st.warning("⚠️ Model not trained yet. Run the pipeline first:")
     st.code(
@@ -161,14 +146,11 @@ if not model_ready:
     )
     st.stop()
 
-# ── Tabs ───────────────────────────────────────────────────────────────────
 tab1, tab2, tab3, tab4 = st.tabs(
     ["📊 Score Transactions", "⚠️ Failure Cases", "📈 Metrics Dashboard", "📋 Audit Trail"]
 )
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Tab 1 — Score Transactions
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 with tab1:
     st.header("Score Transactions")
 
@@ -279,9 +261,7 @@ with tab1:
         st.success("✅ All results logged to `logs/audit_trail.jsonl`")
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Tab 2 — Failure Cases
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 with tab2:
     st.header("⚠️ Failure Cases — Handled Gracefully")
     st.markdown(
@@ -372,9 +352,7 @@ Logged to audit trail. Flagged for post-hoc chargeback analysis. Used for future
         )
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Tab 3 — Metrics Dashboard
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 with tab3:
     st.header("📈 Held-Out Test Set Metrics")
     st.markdown(
@@ -443,9 +421,7 @@ with tab3:
                 col.warning(f"{title} not found.")
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Tab 4 — Audit Trail
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 with tab4:
     st.header("📋 Audit Trail")
     st.markdown(
