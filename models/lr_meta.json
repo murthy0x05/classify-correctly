@@ -1,0 +1,25 @@
+{
+  "chosen_threshold": 0.99,
+  "threshold_info": {
+    "cost_optimal": {
+      "threshold": 0.99,
+      "precision": 0.5603,
+      "recall": 0.798,
+      "fp": 62,
+      "fn": 20,
+      "total_cost_inr": 11902.91
+    },
+    "recall_085_ref": {
+      "threshold": 0.7661,
+      "precision": 0.1318,
+      "recall": 0.8586,
+      "fp": 560,
+      "fn": 14,
+      "total_cost_inr": 85822.04
+    }
+  },
+  "val_roc_auc": 0.9746663831569657,
+  "val_pr_auc": 0.683090587834122,
+  "avg_fraud_amount_inr": 130.14549152542372,
+  "fp_cost_inr": 150.0
+}

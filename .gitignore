@@ -1,7 +1,10 @@
 # Data and Models
 /data/raw/
-/data/processed/
-/models/
+/data/processed/train.csv
+/data/processed/val.csv
+
+# Keep test.csv and models for Streamlit Cloud deployment
+!/data/processed/test.csv
 
 # Logs and Audit
 /logs/
