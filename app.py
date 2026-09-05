@@ -226,9 +226,11 @@ with tab1:
         for i, (r, (_, row)) in enumerate(zip(results, df_to_score.iterrows())):
             label_str = ""
             if has_labels:
-                true_label = int(row.get("Class", -1))
-                is_correct = (r["decision"] == "FLAGGED") == bool(true_label)
-                label_str = "✅" if is_correct else "❌"
+                val = row.get("Class", -1)
+                true_label = int(val) if pd.notna(val) else -1
+                if true_label in (0, 1):
+                    is_correct = (r["decision"] == "FLAGGED") == bool(true_label)
+                    label_str = "✅" if is_correct else "❌"
 
             reason_short = r["top_reasons"][0][:55] if r["top_reasons"] else "N/A"
             rows_html.append(
